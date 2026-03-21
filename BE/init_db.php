@@ -39,7 +39,7 @@ if ($conn->multi_query($sql)) {
             $result->free();
         }
     } while ($conn->more_results() && $conn->next_result());
-    echo "🎉 Import file SQL thành công!";
+    echo "Import file SQL thành công!";
 } else {
     echo "Lỗi khi import: " . $conn->error;
 }
