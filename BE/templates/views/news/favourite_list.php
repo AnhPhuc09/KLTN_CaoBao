@@ -54,13 +54,13 @@
         formData.append("news_id", news_id);
 
         try {
-            const res = await fetch("modules/news/favourite_remove.php", {
+            const res = await fetch("modules/api/favourite_remove.php", {
                 method: "POST",
                 body: formData
             });
             const data = await res.json();
 
-            if (data.status === "removed") {
+            if (data.status === "success") {
                 const item = document.getElementById("fav-" + news_id);
                 if (item) {
                     item.classList.add("fade-out");

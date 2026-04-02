@@ -1,17 +1,12 @@
 <?php
-
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE);
 ini_set('display_errors', 0);
 
-if (!defined('_TAI')) {
-    define('_TAI', true);
-}
-
+require_once __DIR__ . '/cors.php';
+define('_TAI', true);
 require_once dirname(__DIR__, 2) . "/includes/connect.php";
 
-header('Content-Type: application/json');
-session_start();
-
+$inputData = json_decode(file_get_contents('php://input'), true);
 if (empty($_SESSION['user_id'])) {
     echo json_encode([
         'status' => 'error',
@@ -19,10 +14,8 @@ if (empty($_SESSION['user_id'])) {
     ]);
     exit;
 }
-
 $user_id = intval($_SESSION['user_id']);
-$news_id = intval($_POST['news_id'] ?? 0);
-
+$news_id = intval($_POST['news_id'] ?? ($inputData['news_id'] ?? 0));
 if ($news_id <= 0) {
     echo json_encode([
         'status' => 'error',
@@ -30,13 +23,12 @@ if ($news_id <= 0) {
     ]);
     exit;
 }
-
 try {
     $stmtDel = $conn->prepare("DELETE FROM favourite_news WHERE user_id = ? AND news_id = ?");
     $stmtDel->execute([$user_id, $news_id]);
-
     echo json_encode([
-        'status' => 'removed',
+        'status' => 'success',
+        'action' => 'removed',
         'message' => 'Đã xóa khỏi yêu thích'
     ]);
 } catch (Exception $e) {

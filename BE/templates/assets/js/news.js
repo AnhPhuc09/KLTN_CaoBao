@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const keyword = params.get("keyword") || "";
   const category = params.get("category") || "";
 
-  // Load tin tức
   async function loadNews() {
     if (loading) return;
     loading = true;
@@ -23,11 +22,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const res = await fetch(
-        `modules/news/load_news.php?page=${page}&keyword=${encodeURIComponent(
+        `modules/api/news_load.php?page=${page}&keyword=${encodeURIComponent(
           keyword
         )}&category=${encodeURIComponent(category)}`
       );
-      const data = await res.json();
+      const responseJson = await res.json();
+      const data = responseJson.data || [];
 
       if (data.length > 0) {
         const newsList = document.getElementById("newsList");
@@ -37,10 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
         data.forEach((item, index) => {
           const globalIndex = allNews.length;
           allNews.push(item);
-
-          /* =====================
-           HERO NEWS (BÀI #1)
-        ===================== */
           if (isFirstLoad && globalIndex === 0) {
             topNews.innerHTML = `
             <div class="top-wrapper">
@@ -83,10 +79,6 @@ document.addEventListener("DOMContentLoaded", () => {
             markAsViewedAndLoadAI(item);
             return;
           }
-
-          /* =====================
-           HOT NEWS (BÀI #2 → #6)
-        ===================== */
           if (isFirstLoad && globalIndex > 0 && globalIndex <= 4) {
             const hotItem = document.createElement("article");
             hotItem.className = "side-news__item";
@@ -98,10 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
             hotNewsSide.appendChild(hotItem);
             return;
           }
-
-          /* =====================
-           MAIN NEWS (GRID / LIST)
-        ===================== */
           const article = document.createElement("article");
           article.className = "news-item";
 
@@ -176,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadAIRelated(articleId) {
     try {
       const res = await fetch(
-        `modules/news/API_article.php?id=${articleId}&perPage=10`
+        `modules/api/news_article.php?id=${articleId}&perPage=10`
       );
       const data = await res.json();
 
@@ -191,12 +179,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const interval = setInterval(async () => {
       try {
         const res = await fetch(
-          `modules/news/ai_related_${articleId}.json?_=${Date.now()}`
+          `modules/api/news_article.php?id=${articleId}&perPage=10&_=${Date.now()}`
         );
         if (res.ok) {
           const data = await res.json();
-          if (data && data.length > 0) {
-            renderRelatedNews(data.slice(0, 10), false);
+          if (data && data.status === 'success' && data.aiPending === false && data.related && data.related.length > 0) {
+            renderRelatedNews(data.related, false);
             clearInterval(interval);
           }
         }
@@ -217,7 +205,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const wrapper = document.createElement("div");
     wrapper.className = "related-wrapper";
 
-    // Render articles
     relatedArticles.forEach((item) => {
       const article = document.createElement("article");
       article.className = "related-item";
@@ -244,10 +231,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       wrapper.appendChild(article);
     });
-
     box.appendChild(wrapper);
 
-    // Hiệu ứng fade-in
     if (!isFallback) {
       requestAnimationFrame(() => {
         wrapper.querySelectorAll(".related-item").forEach((el) => {
@@ -279,7 +264,6 @@ document.addEventListener("DOMContentLoaded", () => {
     updateSlide();
   }
 
-  // Toggle yêu thích
   async function toggleFavorite(
     btn,
     news_id,
@@ -298,7 +282,7 @@ document.addEventListener("DOMContentLoaded", () => {
       formData.append("title", title);
       formData.append("image", image);
       formData.append("link", link);
-      const res = await fetch("modules/news/favourite_news.php", {
+      const res = await fetch("modules/api/favourite_toggle.php", {
         method: "POST",
         body: formData,
       });
@@ -330,7 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
     formData.append("query", query);
 
     try {
-      const res = await fetch("modules/news/suggestSearch.php", {
+      const res = await fetch("modules/api/news_suggest.php", {
         method: "POST",
         body: formData,
       });
@@ -369,7 +353,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Observer load thêm tin
   const observer = new IntersectionObserver(
     (entries) => {
       if (entries[0].isIntersecting) {

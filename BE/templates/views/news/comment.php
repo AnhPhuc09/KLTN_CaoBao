@@ -29,11 +29,25 @@
 
         <div class="add-comment">
             <h3>Thêm bình luận</h3>
-            <form action="?module=news&action=comment_add" method="POST">
+            <form id="commentAddForm">
                 <input type="hidden" name="news_id" value="<?= $news_id ?>">
                 <textarea name="content" rows="4" placeholder="Nhập bình luận của bạn..." required></textarea>
                 <button type="submit">Gửi bình luận</button>
             </form>
+            <script>
+            document.getElementById('commentAddForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+                fetch('/testcrawl/BE/modules/api/comment_add.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                }).then(res => res.json()).then(res => {
+                    if(res.status === 'success') location.reload(); else alert(res.message);
+                });
+            });
+            </script>
         </div>
 
         <div class="comments">
@@ -90,12 +104,7 @@
                 <div class="comment-actions">
                     <button class="btn-edit-comment">Sửa</button>
 
-                    <form action="/testcrawl/BE/modules/news/comment_delete.php" method="POST"
-                        onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
-                        <input type="hidden" name="comment_id" value="<?= $c['id'] ?>">
-                        <input type="hidden" name="news_id" value="<?= $news_id ?>">
-                        <button type="submit">Xóa</button>
-                    </form>
+                    <button class="btn-delete-comment" data-comment-id="<?= $c['id'] ?>">Xóa</button>
                 </div>
                 <?php endif; ?>
 
@@ -158,16 +167,16 @@
                 button.disabled = true;
                 button.innerText = 'Đang lưu...';
 
-                fetch('/testcrawl/BE/modules/news/comment_edit.php', {
+                    fetch('/testcrawl/BE/modules/api/comment_edit.php', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
+                            'Content-Type': 'application/json'
                         },
-                        body: `comment_id=${encodeURIComponent(commentId)}&content=${encodeURIComponent(newContent)}`
+                        body: JSON.stringify({ comment_id: commentId, content: newContent })
                     })
                     .then(res => res.json())
                     .then(data => {
-                        if (data.success) {
+                        if (data.status === 'success') {
                             // Cập nhật nội dung hiển thị
                             commentItem.querySelector('.comment-content-display p')
                                 .innerHTML = data.content.replace(/\n/g, '<br>');
@@ -195,6 +204,21 @@
                         button.disabled = false;
                         button.innerText = 'Lưu';
                     });
+            });
+        });
+        // Khi nhấn nút Xóa
+        document.querySelectorAll('.btn-delete-comment').forEach(button => {
+            button.addEventListener('click', () => {
+                if(!confirm('Bạn có chắc chắn muốn xóa bình luận này?')) return;
+                const commentId = button.dataset.commentId;
+                fetch('/testcrawl/BE/modules/api/comment_delete.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ comment_id: commentId })
+                }).then(r => r.json()).then(res => {
+                    if(res.status === 'success') location.reload();
+                    else alert(res.message);
+                });
             });
         });
     });

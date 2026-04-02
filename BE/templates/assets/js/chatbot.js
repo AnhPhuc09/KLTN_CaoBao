@@ -8,8 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const sendBtn = document.getElementById("send-btn");
 
   let history = [];
-
-  // Hiển thị tin nhắn
   function displayMessage(message, sender) {
     const messageEl = document.createElement("div");
     messageEl.className = `message ${sender}-message`;
@@ -28,27 +26,23 @@ document.addEventListener("DOMContentLoaded", () => {
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
-  // Mở chat
   chatBubble.addEventListener("click", () => {
     chatWindow.classList.add("active", "expanded");
     chatBubble.style.display = "none";
     chatBox.scrollTop = chatBox.scrollHeight;
   });
 
-  // Đóng chat
   closeBtn.addEventListener("click", () => {
     chatWindow.classList.remove("active", "expanded");
     chatBubble.style.display = "flex";
   });
 
-  // Xóa lịch sử chat
   clearBtn.addEventListener("click", async () => {
     if (confirm("Bạn có chắc muốn xóa lịch sử chat?")) {
       chatBox.innerHTML = "";
       history = [];
-
       try {
-        await fetch("modules/news/API_keyGemini.php", {
+        await fetch("modules/api/news_chat_ai.php", {
           method: "POST",
           body: new URLSearchParams({ mode: "clear" }),
         });
@@ -59,7 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Gửi tin nhắn
   async function sendMessage() {
     const prompt = chatInput.value.trim();
     if (prompt === "") return;
@@ -74,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
     formData.append("prompt", prompt);
 
     try {
-      const res = await fetch("modules/news/API_keyGemini.php", {
+      const res = await fetch("modules/api/news_chat_ai.php", {
         method: "POST",
         body: formData,
       });
@@ -89,9 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
       displayMessage(data.message, "bot");
       const container = document.createElement("div");
       container.className = "related-articles";
-
       let html = `<h5>Bài báo liên quan:</h5>`;
-
       if (data.articles && data.articles.length > 0) {
         html += `<ul>`;
         data.articles.forEach((a) => {
@@ -126,12 +117,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Gửi bằng nút hoặc Enter
   sendBtn.addEventListener("click", sendMessage);
   chatInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") sendMessage();
   });
-
-  // Tin nhắn chào đầu tiên
+  
   displayMessage("Xin chào! Tôi là AI tin tức. Bạn muốn hỏi gì?", "bot");
 });

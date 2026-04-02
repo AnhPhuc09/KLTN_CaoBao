@@ -1,19 +1,16 @@
 <?php
+require_once __DIR__ . '/cors.php';
 define('_TAI', true);
-require __DIR__ . '/../../includes/database.php';
-require __DIR__ . '/../../includes/functions.php';
+require_once __DIR__ . '/../../includes/database.php';
+require_once __DIR__ . '/../../includes/functions.php';
 
-session_start();
-
-$user_id = $_SESSION['user_id'] ?? 1;
-
+$user_id = $_SESSION['user_id'] ?? 0;
 $perPage = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $perPage;
 $keyword  = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
 $category = isset($_GET['category']) ? trim($_GET['category']) : '';
 $where = " WHERE 1=1 ";
-
 if (!empty($keyword)) {
     $keyword = addslashes($keyword);
     $where .= " AND title LIKE '%$keyword%' ";
@@ -23,7 +20,9 @@ if (!empty($category)) {
     $category = addslashes($category);
     $where .= " AND category = '$category' ";
 }
-
+$sqlCount = "SELECT COUNT(id) as total FROM crawl_news $where";
+$totalResult = getOne($sqlCount);
+$total = $totalResult ? $totalResult['total'] : 0;
 $sql = "SELECT n.*,
        EXISTS (
            SELECT 1 
@@ -34,12 +33,22 @@ FROM crawl_news n
 $where
 ORDER BY pubDate DESC
 LIMIT $perPage OFFSET $offset";
-
 $listNews = getAll($sql);
-
-foreach ($listNews as &$item) {
-    $item['is_favourite'] = (bool)$item['is_favourite'];
+if ($listNews) {
+    foreach ($listNews as &$item) {
+        $item['is_favourite'] = (bool)$item['is_favourite'];
+    }
+    unset($item);
+} else {
+    $listNews = [];
 }
-unset($item);
-header('Content-Type: application/json');
-echo json_encode($listNews, JSON_UNESCAPED_UNICODE);
+echo json_encode([
+    'status' => 'success',
+    'data' => $listNews,
+    'pagination' => [
+        'page' => $page,
+        'perPage' => $perPage,
+        'total' => $total,
+        'totalPages' => ceil($total / $perPage)
+    ]
+], JSON_UNESCAPED_UNICODE);

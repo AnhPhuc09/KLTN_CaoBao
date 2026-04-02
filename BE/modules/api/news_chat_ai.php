@@ -1,17 +1,9 @@
 <?php
-session_start();
-header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/cors.php';
 
-/* ===========================
-   CẤU HÌNH
-=========================== */
 $apiKey = "AIzaSyDMZKNrnPffM-B0Ko9AEitW5fNu6zQdJeo";
 $caCertPath = "D:\\laragon\\etc\\ssl\\cacert.pem";
 $model = "gemini-2.5-flash";
-
-/* ===========================
-   HÀM GỌI API GEMINI
-=========================== */
 function callGeminiApi(array $data, string $apiKey, string $model, string $caCertPath): ?array
 {
     $url = "https://generativelanguage.googleapis.com/v1/models/{$model}:generateContent?key={$apiKey}";
@@ -27,7 +19,6 @@ function callGeminiApi(array $data, string $apiKey, string $model, string $caCer
     ]);
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
     if (curl_errno($ch)) {
         $err = curl_error($ch);
         curl_close($ch);
@@ -48,9 +39,6 @@ function callGeminiApi(array $data, string $apiKey, string $model, string $caCer
     return $responseData;
 }
 
-/* ===========================
-   HÀM GỌI API (RETRY)
-=========================== */
 function callGeminiApiWithRetry(array $data, string $apiKey, string $model, string $caCertPath, int $retries = 2, int $delaySeconds = 2): array
 {
     for ($i = 0; $i <= $retries; $i++) {
@@ -63,19 +51,14 @@ function callGeminiApiWithRetry(array $data, string $apiKey, string $model, stri
     }
     return $resp;
 }
-
-/* ===========================
-   XÓA LỊCH SỬ CHAT
-=========================== */
-if (isset($_POST['mode']) && $_POST['mode'] === 'clear') {
+$inputData = json_decode(file_get_contents('php://input'), true);
+$mode = $_POST['mode'] ?? ($inputData['mode'] ?? '');
+if ($mode === 'clear') {
     unset($_SESSION['chat_history']);
     echo json_encode(["status" => "success", "message" => "Lịch sử chat đã được xóa."], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-/* ===========================
-   HÀM TÁCH TỪ KHÓA
-=========================== */
 function extractKeyword($text)
 {
     $stopwords = ['tôi', 'muốn', 'biết', 'về', 'tin', 'tức', 'thông', 'tin', 'hãy', 'cho', 'các', 'bài', 'liên', 'quan', 'đến', 'ai', 'là', 'gì'];
@@ -83,20 +66,12 @@ function extractKeyword($text)
     $filtered = array_filter($words, fn($word) => !in_array(mb_strtolower($word, 'UTF-8'), $stopwords));
     return trim(implode(' ', $filtered));
 }
-
-/* ===========================
-   XỬ LÝ INPUT NGƯỜI DÙNG
-=========================== */
-$prompt = $_POST['prompt'] ?? '';
+$prompt = $_POST['prompt'] ?? ($inputData['prompt'] ?? '');
 $history = $_SESSION['chat_history'] ?? [];
 if (empty($prompt)) {
-    echo json_encode(["error" => "Không có nội dung gửi lên."]);
+    echo json_encode(["status" => "error", "error" => "Không có nội dung gửi lên."]);
     exit;
 }
-
-/* ===========================
-   TRẢ LỜI NGÀY GIỜ
-=========================== */
 if (preg_match('/(thứ mấy|ngày bao nhiêu|ngày mấy|mấy giờ|ngày hiện tại|hôm nay)/ui', $prompt)) {
     date_default_timezone_set('Asia/Ho_Chi_Minh');
     $weekdayNames = [
@@ -110,13 +85,9 @@ if (preg_match('/(thứ mấy|ngày bao nhiêu|ngày mấy|mấy giờ|ngày hi�
     ];
     $dayName = $weekdayNames[date('l')];
     $message = "Hôm nay là {$dayName}, ngày " . date('d/m/Y') . ", bây giờ là " . date('H:i') . ".";
-    echo json_encode(["message" => $message]);
+    echo json_encode(["status" => "success", "message" => $message, "history" => $history]);
     exit;
 }
-
-/* ===========================
-   PROMPT HƯỚNG DẪN KHỞI TẠO
-=========================== */
 if (empty($history)) {
     $history[] = [
         "role" => "user",
@@ -133,16 +104,11 @@ if (empty($history)) {
         ]
     ];
 }
-
-/* ===========================
-   TRUY VẤN DATABASE
-=========================== */
 $articles = [];
 $host = "localhost";
 $user = "root";
 $pass = "";
 $db = "crawl_news";
-
 $conn = new mysqli($host, $user, $pass, $db);
 if (!$conn->connect_error) {
     $keyword = extractKeyword($prompt);
@@ -160,10 +126,6 @@ if (!$conn->connect_error) {
     $stmt->close();
     $conn->close();
 }
-
-/* ===========================
-   GHÉP DỮ LIỆU CHO AI
-=========================== */
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 $currentDate = date('d/m/Y H:i');
 if (!empty($articles)) {
@@ -172,17 +134,12 @@ if (!empty($articles)) {
         $context .= "- {$a['title']} (Nguồn: {$a['source']}, Ngày: {$a['pubDate']})\n";
         $context .= "  Link: {$a['link']}\n\n";
     }
-    // Ưu tiên dữ liệu thật với thông tin chính trị
     $combinedTitles = strtolower(json_encode($articles, JSON_UNESCAPED_UNICODE));
     if (strpos($combinedTitles, 'lương cường') !== false && strpos($prompt, 'chủ tịch') !== false) {
         $context .= "\nLưu ý: Theo dữ liệu mới nhất, ông **Lương Cường** là Chủ tịch nước Việt Nam hiện nay.\n";
     }
     $prompt = $context . "\nCâu hỏi của người dùng: " . $prompt;
 }
-
-/* ===========================
-   GỌI GEMINI API
-=========================== */
 $history[] = ["role" => "user", "parts" => [["text" => $prompt]]];
 $requestData = [
     "contents" => $history,
@@ -193,9 +150,7 @@ $requestData = [
         "maxOutputTokens" => 1024
     ]
 ];
-
 $apiResponse = callGeminiApiWithRetry($requestData, $apiKey, $model, $caCertPath);
-
 if (isset($apiResponse['error'])) {
     $aiMessage = (preg_match('/overloaded|quota/i', $apiResponse['error']))
         ? "Xin lỗi, hệ thống AI đang quá tải. Bạn vui lòng thử lại sau ít phút nhé!"
@@ -206,16 +161,12 @@ if (isset($apiResponse['error'])) {
 } else {
     $aiMessage = "Không có phản hồi văn bản từ AI !!!";
 }
-
-/* ===========================
-   LƯU LỊCH SỬ & TRẢ VỀ KẾT QUẢ
-=========================== */
 $history[] = ["role" => "model", "parts" => [["text" => $aiMessage]]];
 if (count($history) > 10)
     $history = array_slice($history, -10);
 $_SESSION['chat_history'] = $history;
-
 echo json_encode([
+    "status" => "success",
     "message" => $aiMessage,
     "history" => $history,
     "articles" => $articles
