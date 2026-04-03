@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../includes/session.php';
 $error_msg = "";
 
 if (isset($_SESSION['user_id']) && isset($_SESSION['user_role']) && $_SESSION['user_role'] == 'admin') {
-    header("Location: index.php");
+    header("Location: ?module=admin&action=dashboard");
     exit;
 }
 
