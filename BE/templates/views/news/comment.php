@@ -9,10 +9,12 @@
     <link href="templates/assets/css/search.css" rel="stylesheet">
     <link href="/KLTN_CaoBao/BE/templates/assets/css/comment.css" rel="stylesheet">
     <style>
-        /* VnExpress-style CSS styling */
         body { background-color: #f4f4f4; margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
         .container { max-width: 900px; margin: 20px auto; background: #fff; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-radius: 8px; }
-        .btn-back { display: inline-block; color: #b22222; text-decoration: none; font-weight: bold; margin-bottom: 20px; font-size: 14px; }
+        .btn-back { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: transparent;
+                    color: #b22222; font-weight: 600; font-size: 14px; text-decoration: none; border: 1px solid #b22222; transition: all 0.25s ease; cursor: pointer;}
+        .btn-back:hover { background: #b22222; color: #fff; transform: translateX(-3px); box-shadow: 0 4px 10px rgba(178, 34, 34, 0.2);}
+        .btn-back:active { transform: scale(0.96);box-shadow: none;}
         .btn-back:hover { text-decoration: underline; }
         
         .article-header { border-bottom: 1px solid #e5e5e5; padding-bottom: 15px; margin-bottom: 20px; }
@@ -30,7 +32,6 @@
         .source-link-wrapper a { display: inline-flex; align-items: center; background: #fdfdfd; border: 1px solid #ddd; padding: 10px 20px; color: #004d80; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 4px; transition: all 0.2s; }
         .source-link-wrapper a:hover { background: #004d80; color: #fff; border-color: #004d80; }
         
-        /* Comment form styles */
         .add-comment h3, .comments h3 { font-family: Arial, sans-serif; border-bottom: 2px solid #b22222; display: inline-block; padding-bottom: 8px; margin-top: 30px; }
         #commentAddForm textarea { width: 100%; border: 1px solid #dcdcdc; border-radius: 4px; padding: 15px; font-size: 15px; font-family: inherit; margin-bottom: 10px; resize: vertical; outline: none; }
         #commentAddForm textarea:focus { border-color: #b22222; }
@@ -42,7 +43,7 @@
 <body>
     <div class="container">
         <a href="?module=news&action=list" class="btn-back">
-            &larr; Trở về trang nhà
+            &larr; Trở về trang chủ
         </a>
 
         <!-- ARTICLE HEADER -->

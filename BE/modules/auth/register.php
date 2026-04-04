@@ -5,11 +5,7 @@ if(!defined('_TAI')){
 $data = [
     'title' => 'Đăng ký tài khoản'
 ];
-
-
-
 layout('header-auth',$data);
-
 
 if(isPost()){
     $filter = filterData();
@@ -28,7 +24,6 @@ if(isPost()){
         $errors['email']['isEmail'] = 'Email không đúng định dạng';
         }else{
             $email = $filter['email'];
-
             $checkEmail = getRows("SELECT * FROM users WHERE email = '$email'");
             if($checkEmail > 0){ 
                 $errors['email']['check'] = 'Email đã tồn tại';
@@ -59,9 +54,7 @@ if(isPost()){
             'active_token' => $active_token,
             'created_at' => date('Y:m:d H:i:s')
         ];
-
         $insertStatus = insert('users', $data);
-
         if($insertStatus){
             $emailTo = $filter['email'];
             $subject = 'Kích hoạt tài khoản hệ thống Tai!!';
@@ -86,7 +79,6 @@ if(isPost()){
     }
 
     $errorsArr =  getSessionFlash('errors');
-
 }
 
 renderView('auth/register', [

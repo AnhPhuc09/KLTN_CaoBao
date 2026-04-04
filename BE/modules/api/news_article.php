@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/cors.php';
 
-$apiKey = "AIzaSyD-U2KV7v_iFzZ8DUj61U-yCCPEURxX7MU";
+$apiKey = "AIzaSyBcGkqMqWqa0Kdn76FXTDVCRsC3tce-aJo";
 $caCertPath = "D:\\laragon\\etc\\ssl\\cacert.pem";
 $model = "gemini-2.5-flash";
 $mysqli = new mysqli("localhost", "root", "", "crawl_news");

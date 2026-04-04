@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/cors.php';
 
-$apiKey = "AIzaSyDMZKNrnPffM-B0Ko9AEitW5fNu6zQdJeo";
+$apiKey = "AIzaSyBcGkqMqWqa0Kdn76FXTDVCRsC3tce-aJo";
 $caCertPath = "D:\\laragon\\etc\\ssl\\cacert.pem";
 $model = "gemini-2.5-flash";
 function callGeminiApi(array $data, string $apiKey, string $model, string $caCertPath): ?array

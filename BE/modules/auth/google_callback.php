@@ -6,14 +6,10 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once 'includes/database.php';
 require_once 'includes/session.php';
 
-// ====== CẤU HÌNH GOOGLE OAUTH ======
 $client_id = "406500628615-c725efu1d7ijrg41ekuuv0m32uvqdafo.apps.googleusercontent.com";
 $client_secret = "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";
 $redirect_uri = 'http://localhost/KLTN_CaoBao/BE/?module=auth&action=google_callback';
-
-// ====== XỬ LÝ GOOGLE CALLBACK ======
 if (isset($_GET['code'])) {
-    // Lấy access token
     $token_url = "https://oauth2.googleapis.com/token";
     $post_data = [
         'code' => $_GET['code'],
@@ -31,13 +27,12 @@ if (isset($_GET['code'])) {
         CURLOPT_POSTFIELDS => http_build_query($post_data),
         CURLOPT_SSL_VERIFYPEER => false
     ]);
+
     $response = curl_exec($ch);
     curl_close($ch);
 
     $data = json_decode($response, true);
-
     if (!empty($data['access_token'])) {
-        // Lấy thông tin người dùng
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL => "https://www.googleapis.com/oauth2/v2/userinfo",
@@ -51,8 +46,6 @@ if (isset($_GET['code'])) {
         if (!empty($userinfo['email'])) {
             $email = $userinfo['email'];
             $name = $userinfo['name'] ?? 'Người dùng Google';
-
-            // Kiểm tra user trong database
             $checkUser = getOne("SELECT * FROM users WHERE email = '$email'");
             if (empty($checkUser)) {
                 $newUser = [
@@ -61,11 +54,18 @@ if (isset($_GET['code'])) {
                     'password' => password_hash(uniqid(), PASSWORD_DEFAULT),
                     'created_at' => date('Y-m-d H:i:s')
                 ];
-                $userId = insert('users', $newUser);
+                if (insert('users', $newUser)) {
+                    $userId = lastID();
+                    if (!$userId) {
+                        $newUserCheck = getOne("SELECT id FROM users WHERE email = '$email'");
+                        $userId = $newUserCheck['id'];
+                    }
+                } else {
+                    die("Lỗi tạo người dùng mới trong database.");
+                }
             } else {
                 $userId = $checkUser['id'];
             }
-
             $_SESSION['user_id'] = $userId;
             $token = sha1(uniqid() . time());
             setSession('token_login', $token);
@@ -77,18 +77,15 @@ if (isset($_GET['code'])) {
             insert('token_login', $tokenData);
             redirect('/?module=news&action=list');
             exit;
-
         } else {
             echo "Không thể lấy thông tin người dùng từ Google.";
             exit;
         }
-
     } else {
-        echo "Không thể lấy token từ Google.";
+        echo "Không thể lấy token từ Google. Chi tiết lỗi: " . htmlspecialchars(json_encode($data));
         exit;
     }
-
 } else {
-    echo "Mã xác thực không hợp lệ (code missing).";
+    echo "Mã xác thực không hợp lệ.";
     exit;
 }
