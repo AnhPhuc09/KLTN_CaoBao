@@ -14,7 +14,7 @@ layout('header-auth', $data);
    GOOGLE OAUTH CONFIG
 ========================== */
 $client_id = "406500628615-c725efu1d7ijrg41ekuuv0m32uvqdafo.apps.googleusercontent.com";
-$redirect_uri = 'http://localhost/testcrawl/BE/?module=auth&action=google_callback';
+$redirect_uri = 'http://localhost/KLTN_CaoBao/BE/?module=auth&action=google_callback';
 $scope = "email profile";
 
 $google_login_url = "https://accounts.google.com/o/oauth2/v2/auth?"

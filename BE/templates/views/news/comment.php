@@ -7,25 +7,78 @@
     <title>Document</title>
     <link href="templates/assets/css/list.css" rel="stylesheet">
     <link href="templates/assets/css/search.css" rel="stylesheet">
-    <link href="/testcrawl/BE/templates/assets/css/comment.css" rel="stylesheet">
-
+    <link href="/KLTN_CaoBao/BE/templates/assets/css/comment.css" rel="stylesheet">
+    <style>
+        /* VnExpress-style CSS styling */
+        body { background-color: #f4f4f4; margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
+        .container { max-width: 900px; margin: 20px auto; background: #fff; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-radius: 8px; }
+        .btn-back { display: inline-block; color: #b22222; text-decoration: none; font-weight: bold; margin-bottom: 20px; font-size: 14px; }
+        .btn-back:hover { text-decoration: underline; }
+        
+        .article-header { border-bottom: 1px solid #e5e5e5; padding-bottom: 15px; margin-bottom: 20px; }
+        .article-category { text-transform: uppercase; color: #9f224e; font-weight: bold; font-size: 13px; margin-bottom: 10px; display: inline-block; }
+        .article-title { font-size: 32px; line-height: 1.4; color: #222; margin: 0 0 15px 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-weight: 700; }
+        .article-meta { font-size: 14px; color: #757575; display: flex; align-items: center; justify-content: space-between; }
+        
+        .article-content { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 19px; line-height: 1.7; color: #111; margin-bottom: 30px; letter-spacing: 0.1px; }
+        .article-content p { margin: 0 0 20px 0; text-align: justify; }
+        .article-content img { max-width: 100%; height: auto; display: block; margin: 0 auto 10px auto; border-radius: 4px; }
+        .article-content figure { margin: 0 0 25px 0; text-align: center; }
+        .article-content figcaption { font-size: 14px; color: #757575; font-style: italic; background-color: #f7f7f7; padding: 8px; margin-top: 5px; }
+        
+        .source-link-wrapper { text-align: left; padding: 15px 0; border-top: 1px solid #e5e5e5; margin-top: 20px; }
+        .source-link-wrapper a { display: inline-flex; align-items: center; background: #fdfdfd; border: 1px solid #ddd; padding: 10px 20px; color: #004d80; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 4px; transition: all 0.2s; }
+        .source-link-wrapper a:hover { background: #004d80; color: #fff; border-color: #004d80; }
+        
+        /* Comment form styles */
+        .add-comment h3, .comments h3 { font-family: Arial, sans-serif; border-bottom: 2px solid #b22222; display: inline-block; padding-bottom: 8px; margin-top: 30px; }
+        #commentAddForm textarea { width: 100%; border: 1px solid #dcdcdc; border-radius: 4px; padding: 15px; font-size: 15px; font-family: inherit; margin-bottom: 10px; resize: vertical; outline: none; }
+        #commentAddForm textarea:focus { border-color: #b22222; }
+        #commentAddForm button { background: #b22222; color: #fff; border: none; padding: 10px 25px; border-radius: 4px; font-size: 15px; cursor: pointer; font-weight: bold; }
+        #commentAddForm button:hover { background: #901616; }
+    </style>
 </head>
 
 <body>
     <div class="container">
         <a href="?module=news&action=list" class="btn-back">
-            <i class="fa fa-arrow-left"></i> Quay về trang chủ
+            &larr; Trở về trang nhà
         </a>
 
-        <div class="news-detail">
-            <h2><?= htmlspecialchars($news['title']) ?></h2>
-            <?php if (!empty($news['image'])): ?>
-            <img src="<?= htmlspecialchars($news['image']) ?>" alt="Ảnh bài báo">
-            <?php endif; ?>
-            <p><strong>Ngày đăng:</strong> <?= htmlspecialchars($news['pubDate']) ?></p>
-            <p><strong>Danh mục:</strong> <?= htmlspecialchars($news['category']) ?></p>
-            <p><a href="<?= htmlspecialchars($news['link']) ?>" target="_blank">Xem bài gốc</a></p>
-        </div>
+        <!-- ARTICLE HEADER -->
+        <article>
+            <header class="article-header">
+                <span class="article-category"><?= htmlspecialchars($news['category'] ?? 'Tin tức') ?></span>
+                <h1 class="article-title"><?= htmlspecialchars($news['title']) ?></h1>
+                
+                <div class="article-meta">
+                    <div class="author-time">
+                        <strong>Nguồn: <?= htmlspecialchars($news['source'] ?? 'Tổng hợp') ?></strong> &nbsp;|&nbsp; 
+                        <span><?= htmlspecialchars(date('l, d/m/Y H:i', strtotime($news['pubDate']))) ?></span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ARTICLE CONTENT BODY -->
+            <div class="article-content">
+                <?php if (!empty($news['image'])): ?>
+                    <figure>
+                        <img src="<?= htmlspecialchars($news['image']) ?>" alt="Ảnh bài báo">
+                        <figcaption>Ảnh đại diện bài báo.</figcaption>
+                    </figure>
+                <?php endif; ?>
+                
+                <!-- IN RAW HTML CONTENT -->
+                <?= $news['content'] ?>
+            </div>
+
+            <!-- SOURCE LINK BUTTON -->
+            <div class="source-link-wrapper">
+                <a href="<?= htmlspecialchars($news['link']) ?>" target="_blank">
+                    Đọc bài viết gốc trên <?= htmlspecialchars($news['source'] ?? 'Tòa soạn báo') ?> &rarr;
+                </a>
+            </div>
+        </article>
 
         <div class="add-comment">
             <h3>Thêm bình luận</h3>
@@ -39,7 +92,7 @@
                 e.preventDefault();
                 const formData = new FormData(this);
                 const data = Object.fromEntries(formData.entries());
-                fetch('/testcrawl/BE/modules/api/comment_add.php', {
+                fetch('/KLTN_CaoBao/BE/modules/api/comment_add.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
@@ -55,7 +108,7 @@
             <?php if ($comments->num_rows > 0): ?>
             <?php while ($c = $comments->fetch_assoc()): ?>
             <?php
-                $baseUrl = '/testcrawl'; // URL gốc của dự án
+                $baseUrl = '/KLTN_CaoBao'; // URL gốc của dự án
                 $baseDir = $_SERVER['DOCUMENT_ROOT'] . $baseUrl; // Thư mục gốc của dự án
                 $defaultAvatar = 'templates/uploads/avatar.jpg'; // Avatar mặc định
             
@@ -167,7 +220,7 @@
                 button.disabled = true;
                 button.innerText = 'Đang lưu...';
 
-                    fetch('/testcrawl/BE/modules/api/comment_edit.php', {
+                    fetch('/KLTN_CaoBao/BE/modules/api/comment_edit.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -211,7 +264,7 @@
             button.addEventListener('click', () => {
                 if(!confirm('Bạn có chắc chắn muốn xóa bình luận này?')) return;
                 const commentId = button.dataset.commentId;
-                fetch('/testcrawl/BE/modules/api/comment_delete.php', {
+                fetch('/KLTN_CaoBao/BE/modules/api/comment_delete.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ comment_id: commentId })

@@ -10,7 +10,7 @@ define('_DB', 'crawl_news');
 define('_USER', 'root');          
 define('_PASS', '');  
 
-define('_HOST_URL','http://'.$_SERVER['HTTP_HOST'].'/testcrawl/BE');
+define('_HOST_URL','http://'.$_SERVER['HTTP_HOST'].'/KLTN_CaoBao/BE');
 define('_HOST_URL_TEMPLATES',_HOST_URL.'/templates');
 
 define('_PATH_URL',__DIR__);

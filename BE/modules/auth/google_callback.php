@@ -9,7 +9,7 @@ require_once 'includes/session.php';
 // ====== CẤU HÌNH GOOGLE OAUTH ======
 $client_id = "406500628615-c725efu1d7ijrg41ekuuv0m32uvqdafo.apps.googleusercontent.com";
 $client_secret = "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";
-$redirect_uri = 'http://localhost/testcrawl/BE/?module=auth&action=google_callback';
+$redirect_uri = 'http://localhost/KLTN_CaoBao/BE/?module=auth&action=google_callback';
 
 // ====== XỬ LÝ GOOGLE CALLBACK ======
 if (isset($_GET['code'])) {
