@@ -3,10 +3,10 @@ if(!defined('_TAI')) {
     die('Truy cập không hợp lệ');
 }
 
-$host = "localhost";
-$user = "root";
-$pass = "";
-$db   = "crawl_news";
+$host = defined('_HOST') ? _HOST : "localhost";
+$user = defined('_USER') ? _USER : "root";
+$pass = defined('_PASS') ? _PASS : "";
+$db   = defined('_DB') ? _DB : "crawl_news";
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) {
     die("Kết nối thất bại: " . $conn->connect_error);

@@ -29,8 +29,6 @@ if (isset($_GET['code'])) {
     ]);
 
     $response = curl_exec($ch);
-    curl_close($ch);
-
     $data = json_decode($response, true);
     if (!empty($data['access_token'])) {
         $ch = curl_init();
@@ -41,7 +39,6 @@ if (isset($_GET['code'])) {
             CURLOPT_SSL_VERIFYPEER => false
         ]);
         $userinfo = json_decode(curl_exec($ch), true);
-        curl_close($ch);
 
         if (!empty($userinfo['email'])) {
             $email = $userinfo['email'];
@@ -79,7 +76,12 @@ if (isset($_GET['code'])) {
             ];
             insert('token_login', $tokenData);
             $avatar = $userinfo['picture'] ?? '';
-            $redirectUrl = _FRONTEND_URL . "/login?token=" . $token . "&name=" . urlencode($name) . "&avatar=" . urlencode($avatar);
+            $state = $_GET['state'] ?? '';
+            if ($state === 'react') {
+                $redirectUrl = _FRONTEND_URL . "/login?token=" . $token . "&name=" . urlencode($name) . "&avatar=" . urlencode($avatar);
+            } else {
+                $redirectUrl = _HOST_URL . "/?module=news&action=list";
+            }
             header("Location: " . $redirectUrl);
             exit;
         } else {

@@ -5,7 +5,7 @@ const _ACTION = 'index';
 const _DEBUG = true;
 
 $envConfig = [];
-$envFilePath = __DIR__ . '/.env';
+$envFilePath = dirname(__DIR__) . '/.env';
 if (file_exists($envFilePath)) {
     $envConfig = parse_ini_file($envFilePath);
 }

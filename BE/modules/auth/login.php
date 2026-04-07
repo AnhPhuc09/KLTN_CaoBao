@@ -19,7 +19,8 @@ $google_login_url = "https://accounts.google.com/o/oauth2/v2/auth?"
     . "&redirect_uri=" . urlencode($redirect_uri)
     . "&response_type=code"
     . "&scope=" . urlencode($scope)
-    . "&access_type=offline";
+    . "&access_type=offline"
+    . "&state=legacy";
 
 if (isPost()) {
     $filter = filterData();

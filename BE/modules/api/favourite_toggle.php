@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/cors.php';
-define('_TAI', true);
+require_once dirname(__DIR__, 2) . '/config.php';
 require_once dirname(__DIR__, 2) . "/includes/connect.php";
 
 $inputData = json_decode(file_get_contents('php://input'), true);
