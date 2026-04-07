@@ -43,6 +43,9 @@ if (isPost()) {
                 setSessionFlash('msg', 'Đã có lỗi xảy ra. Vui lòng thử lại sau!');
                 setSessionFlash('msg_type', 'danger');
             }
+        } else {
+            setSessionFlash('msg', 'Địa chỉ email này chưa được đăng ký trong hệ thống!');
+            setSessionFlash('msg_type', 'danger');
         }
     } else {
         setSessionFlash('msg', 'Vui lòng kiểm tra lại dữ liệu nhập vào');

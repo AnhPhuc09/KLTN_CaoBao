@@ -75,7 +75,9 @@ if (isset($_GET['code'])) {
                 'created_at' => date('Y-m-d H:i:s')
             ];
             insert('token_login', $tokenData);
-            redirect('/?module=news&action=list');
+            $avatar = $userinfo['picture'] ?? '';
+            $redirectUrl = _FRONTEND_URL . "/login?token=" . $token . "&name=" . urlencode($name) . "&avatar=" . urlencode($avatar);
+            header("Location: " . $redirectUrl);
             exit;
         } else {
             echo "Không thể lấy thông tin người dùng từ Google.";
