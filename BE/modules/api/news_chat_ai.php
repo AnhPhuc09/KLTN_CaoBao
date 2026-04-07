@@ -1,7 +1,10 @@
 <?php
+define('_TAI', true);
 require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../includes/database.php';
 
-$apiKey = "AIzaSyBcGkqMqWqa0Kdn76FXTDVCRsC3tce-aJo";
+$apiKey = _GEMINI_API_KEY;
 $caCertPath = "D:\\laragon\\etc\\ssl\\cacert.pem";
 $model = "gemini-2.5-flash";
 function callGeminiApi(array $data, string $apiKey, string $model, string $caCertPath): ?array
@@ -21,10 +24,8 @@ function callGeminiApi(array $data, string $apiKey, string $model, string $caCer
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     if (curl_errno($ch)) {
         $err = curl_error($ch);
-        curl_close($ch);
         return ["error" => "cURL error: " . $err];
     }
-    curl_close($ch);
 
     $responseData = json_decode($response, true);
     if (!$responseData) {
@@ -105,12 +106,9 @@ if (empty($history)) {
     ];
 }
 $articles = [];
-$host = "localhost";
-$user = "root";
-$pass = "";
-$db = "crawl_news";
-$conn = new mysqli($host, $user, $pass, $db);
-if (!$conn->connect_error) {
+
+if ($conn) {
+    $conn->set_charset("utf8mb4");
     $keyword = extractKeyword($prompt);
     if (empty($keyword))
         $keyword = $prompt;
@@ -119,12 +117,9 @@ if (!$conn->connect_error) {
     $stmt->bind_param("s", $like);
     $stmt->execute();
     $result = $stmt->get_result();
-
     while ($row = $result->fetch_assoc())
         $articles[] = $row;
-
     $stmt->close();
-    $conn->close();
 }
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 $currentDate = date('d/m/Y H:i');

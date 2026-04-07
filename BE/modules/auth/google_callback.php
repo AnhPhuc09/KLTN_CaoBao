@@ -6,9 +6,9 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once 'includes/database.php';
 require_once 'includes/session.php';
 
-$client_id = "406500628615-c725efu1d7ijrg41ekuuv0m32uvqdafo.apps.googleusercontent.com";
-$client_secret = "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";
-$redirect_uri = 'http://localhost/KLTN_CaoBao/BE/?module=auth&action=google_callback';
+$client_id = _GOOGLE_CLIENT_ID;
+$client_secret = _GOOGLE_CLIENT_SECRET;
+$redirect_uri = _HOST_URL . '/?module=auth&action=google_callback';
 if (isset($_GET['code'])) {
     $token_url = "https://oauth2.googleapis.com/token";
     $post_data = [
@@ -46,12 +46,15 @@ if (isset($_GET['code'])) {
         if (!empty($userinfo['email'])) {
             $email = $userinfo['email'];
             $name = $userinfo['name'] ?? 'Người dùng Google';
-            $checkUser = getOne("SELECT * FROM users WHERE email = '$email'");
+            global $conn;
+            $emailEsc = $conn->real_escape_string($email);
+            $checkUser = getOne("SELECT * FROM users WHERE email = '$emailEsc'");
             if (empty($checkUser)) {
                 $newUser = [
                     'email' => $email,
                     'fullname' => $name,
                     'password' => password_hash(uniqid(), PASSWORD_DEFAULT),
+                    'status' => 1,
                     'created_at' => date('Y-m-d H:i:s')
                 ];
                 if (insert('users', $newUser)) {

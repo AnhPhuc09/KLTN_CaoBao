@@ -1,14 +1,10 @@
 <?php
+define('_TAI', true);
 require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../includes/database.php';
+$conn->set_charset("utf8mb4");
 
-$host = "localhost";
-$user = "root";
-$pass = "";
-$db = "crawl_news";
-$conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) {
-    die(json_encode(["status" => "error", "message" => "Kết nối thất bại: " . $conn->connect_error]));
-}
 $query = isset($_GET['query']) ? trim($_GET['query']) : '';
 if (empty($query) && isset($_POST['query'])) {
     $query = trim($_POST['query']);
@@ -23,13 +19,13 @@ if (mb_strlen($query) < 2) {
     echo json_encode(["status" => "success", "suggestions" => []], JSON_UNESCAPED_UNICODE);
     exit;
 }
-$query = $conn->real_escape_string($query);
-$sql = "SELECT title 
-        FROM crawl_news 
-        WHERE title LIKE '%$query%' 
-        ORDER BY pubDate DESC 
-        LIMIT 20";
-$result = $conn->query($sql);
+
+$stmt = $conn->prepare("SELECT title FROM crawl_news WHERE title LIKE ? ORDER BY pubDate DESC LIMIT 20");
+$likeQuery = "%" . $query . "%";
+$stmt->bind_param("s", $likeQuery);
+$stmt->execute();
+$result = $stmt->get_result();
+
 $suggestions = [];
 if ($result) {
     while ($row = $result->fetch_assoc()) {
@@ -38,7 +34,8 @@ if ($result) {
         }
     }
 }
-$conn->close();
+$stmt->close();
+
 if (empty($suggestions)) {
     echo json_encode(
         ["status" => "success", "suggestions" => []],

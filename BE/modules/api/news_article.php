@@ -1,15 +1,14 @@
 <?php
+define('_TAI', true);
 require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../includes/database.php';
 
-$apiKey = "AIzaSyBcGkqMqWqa0Kdn76FXTDVCRsC3tce-aJo";
+$apiKey = _GEMINI_API_KEY;
 $caCertPath = "D:\\laragon\\etc\\ssl\\cacert.pem";
 $model = "gemini-2.5-flash";
-$mysqli = new mysqli("localhost", "root", "", "crawl_news");
+$mysqli = $conn;
 $mysqli->set_charset("utf8mb4");
-if ($mysqli->connect_error) {
-    echo json_encode(["status" => "error", "message" => "Lỗi kết nối CSDL"]);
-    exit;
-}
 $articleId = max(0, intval($_GET['id'] ?? 0));
 $page = max(1, intval($_GET['page'] ?? 1));
 $perPage = max(1, intval($_GET['perPage'] ?? 5));
@@ -102,7 +101,7 @@ register_shutdown_function(function () use ($current, $articleId, $apiKey, $mode
         CURLOPT_CAINFO => $caCertPath
     ]);
     $res = curl_exec($ch);
-    curl_close($ch);
+
     $apiRes = json_decode($res, true);
     $ids = [];
     if (!empty($apiRes['candidates'][0]['content']['parts'][0]['text'])) {
